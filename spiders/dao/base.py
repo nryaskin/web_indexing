@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-engine = create_engine('mysql+mysqldb://tutturu:1@localhost/indexing_schema')
+engine = create_engine('sqlite:///links.db')
 
 Session = sessionmaker(bind=engine)
 

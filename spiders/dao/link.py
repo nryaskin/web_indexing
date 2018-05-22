@@ -1,13 +1,14 @@
-from sqlalchemy import Table, Column, String, Integer, ForeignKey, DateTime
+from sqlalchemy import Table, Column, String, Integer, ForeignKey, DateTime, MetaData
 from sqlalchemy.orm import relationship
-
 from base import Base
+
 
 link_words_assosiation = Table(
     'links_words', Base.metadata,
     Column('link', String(255), ForeignKey('links.link'), primary_key=True),
     Column('word', String(255), ForeignKey('words.word'), primary_key=True)
 )
+
 
 class Link(Base):
     __tablename__='links'
