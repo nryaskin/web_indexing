@@ -13,25 +13,28 @@
     <div class="row">
         <div class="col-8">
             <div class="container-fluid">
-                <form>
+                <form id="form-app">
                     <p class="h4 text-center mb-4">Search across our database</p>
 
                     <div class="md-form">
                         <i class="fa fa-external-link-square prefix grey-text" aria-hidden="true"></i>
-                        <input type="text" id="word" class="form-control">
+                        <input type="text" id="word-app" class="form-control">
                         <label for="word">Start typing your word . . .</label>
                     </div>
 
                     <div class="md-form">
                         <i class="fa fa-lock prefix grey-text"></i>
-                        <input type="text" id="url" class="form-control">
+                        <input type="text" id="url-app" class="form-control">
                         <label for="url">Start typing your url . . .</label>
+                    </div>
+                    <div class="modal-footer d-flex justify-content-center">
+                        <button class="btn btn-default" id="search-app" onclick="">Search</button>
                     </div>
                 </form>
             </div>
         </div>
         <div class="col-4 border-left border-dark">
-            <ul class="list-group" id="searchResult">
+            <ul class="list-group" id="searchResult-app">
             </ul>
         </div>
     </div>
@@ -45,6 +48,7 @@
             src="https://cdnjs.cloudflare.com/ajax/libs/mdbootstrap/4.5.0/js/mdb.min.js"></script>
     <script type="text/javascript"
             src="https://cdnjs.cloudflare.com/ajax/libs/underscore.js/1.9.0/underscore-min.js"></script>
+    <script type="text/javascript" src="./jquery.blockUI.js"></script>
     <script type="text/javascript"
             src="./scripts.js"></script>
 </body>

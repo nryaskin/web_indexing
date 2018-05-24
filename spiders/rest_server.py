@@ -31,10 +31,12 @@ def by_func(func, k, path):
     return result
 
 def get_words(handler):
-    return by_func(words_by_url, 'words', handler.path)
+    res = by_func(words_by_url, 'words', handler.path)
+    return res
 
 def get_urls(handler):
-    return by_func(urls_by_word, 'links', handler.path)
+    res = by_func(urls_by_word, 'links', handler.path)
+    return res
 
 def set_record(handler):
     key = urllib.unquote(handler.path[8:])
@@ -78,6 +80,7 @@ class RESTRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
         self.routes = {
             r'^/index.html$': {'file': 'index.html', 'media_type': 'text/html'},
             r'^/scripts.js$': {'file': 'scripts.js', 'media_type': 'application/javascript'},
+            r'^/jquery.blockUI.js$': {'file': 'jquery.blockUI.js', 'media_type': 'application/javascript'},
             r'^/styles.css$': {'file': 'styles.css', 'media_type': 'text/css'},
             r'^/words.*': {'GET': get_words, 'media_type': 'application/json'},
             r'^/urls.*': {'GET': get_urls, 'media_type': 'application/json'}}
