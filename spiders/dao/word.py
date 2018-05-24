@@ -1,4 +1,6 @@
 from sqlalchemy import Column, String, Integer
+from link import link_words_assosiation
+from sqlalchemy.orm import relationship
 
 from base import Base
 
@@ -6,6 +8,7 @@ class Word(Base):
     __tablename__='words'
 
     word = Column(String(255), primary_key=True)
+    links = relationship("Link", secondary=link_words_assosiation)
 
     def __repr__(self):
         return "Word(%s)" % (self.word)

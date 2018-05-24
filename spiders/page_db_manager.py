@@ -4,16 +4,20 @@ import re
 import sys
 import requests
 from lxml import html
-from dao.base import Session
+from dao.base import Session, engine, Base
 from dao.link import Link
 from dao.word import Word
 
 
 class Spider:
-    def __enter__(self):
+    def __init__(self):
         self.session = Session()
 
+    def __enter__(self):
+        return self
+
     def __exit__(self, exc_type, exc_value, traceback):
+        self.session.commit()
         self.session.close()
 
     def get_links(self, base_link, htmlElement):
@@ -62,11 +66,11 @@ class Spider:
     def walk_links(self, base_link, is_valid_link):
         links = self.parse_page(base_link)
         page_links = set(filter(is_valid_link, links))
-        links_c = self.session.query(Link).filter(Link.link.in_(map(lambda x : x.link, page_links)))
+        links_c = list(self.session.query(Link).filter(Link.link.in_(map(lambda x : x.link, page_links))))
         links = map(lambda x: x.link, links_c)
         page_new_links = filter(lambda x: x.link not in links, page_links)
         self.session.add_all(page_new_links)
-
+        print 'Found %s new links at %s' % (len(page_new_links), base_link)
         for new_link in page_new_links:
             self.walk_links(new_link, is_valid_link)
 
@@ -87,6 +91,3 @@ if __name__ == '__main__':
             sys.exit(1)
         print "End of link collecting"
         print "--end--"
-
-#print text
-

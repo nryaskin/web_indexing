@@ -1,7 +1,8 @@
 #!/usr/bin/env python
 
-import sys, os, re, shutil, json, urllib, urllib2, BaseHTTPServer
-
+import sys, os, re, shutil, json, urllib, urllib2, BaseHTTPServer, operator
+from words import words_by_url
+from links import urls_by_word
 # Fix issues with decoding HTTP responses
 reload(sys)
 sys.setdefaultencoding('utf8')
@@ -10,12 +11,30 @@ here = os.path.dirname(os.path.realpath(__file__))
 
 records = {}
 
-def get_records(handler):
-    return records
+def get_params(url):
+    params = url.split("?")[1]
+    params = params.split('=')
+    pairs = zip(params[0::2], params[1::2])
+    answer = dict((k,v) for k,v in pairs)
+    return answer
 
-def get_record(handler):
-    key = urllib.unquote(handler.path[8:])
-    return records[key] if key in records else None
+def decode_values(path):
+    params = get_params(path)
+    return urllib.unquote(params['values']).decode('utf8')
+
+def by_func(func, k, path):
+    params = get_params(path)
+    values = urllib.unquote(params['values']).decode('utf8').split(' ')
+    if not values:
+        return {k: []}
+    result = {k: list(set(reduce(operator.concat, map(lambda url: func(url), values))))}
+    return result
+
+def get_words(handler):
+    return by_func(words_by_url, 'words', handler.path)
+
+def get_urls(handler):
+    return by_func(urls_by_word, 'links', handler.path)
 
 def set_record(handler):
     key = urllib.unquote(handler.path[8:])
@@ -57,9 +76,11 @@ class MethodRequest(urllib2.Request):
 class RESTRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     def __init__(self, *args, **kwargs):
         self.routes = {
-            r'^/$': {'file': 'web/index.html', 'media_type': 'text/html'},
-            r'^/records$': {'GET': get_records, 'media_type': 'application/json'},
-            r'^/record/': {'GET': get_record, 'PUT': set_record, 'DELETE': delete_record, 'media_type': 'application/json'}}
+            r'^/index.html$': {'file': 'index.html', 'media_type': 'text/html'},
+            r'^/scripts.js$': {'file': 'scripts.js', 'media_type': 'application/javascript'},
+            r'^/styles.css$': {'file': 'styles.css', 'media_type': 'text/css'},
+            r'^/words.*': {'GET': get_words, 'media_type': 'application/json'},
+            r'^/urls.*': {'GET': get_urls, 'media_type': 'application/json'}}
         
         return BaseHTTPServer.BaseHTTPRequestHandler.__init__(self, *args, **kwargs)
     

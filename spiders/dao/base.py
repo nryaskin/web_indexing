@@ -5,6 +5,8 @@ from sqlalchemy.orm import sessionmaker
 
 engine = create_engine('sqlite:///links.db')
 
-Session = sessionmaker(bind=engine)
+Session = sessionmaker(bind=engine, autoflush=False)
 
 Base = declarative_base()
+
+print 'Init'
