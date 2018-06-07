@@ -2,6 +2,7 @@
 import datetime
 import re
 import sys
+import unicodedata
 import requests
 from lxml import html
 from dao.base import Session, engine, Base
@@ -16,6 +17,13 @@ class Spider:
     def __init__(self):
         self.session = Session()
         self.dead_links = set()
+        all_chars = (unichr(i) for i in xrange(sys.maxunicode))
+        # Get all non printable characters
+        control_chars = ''.join(c for c in all_chars if unicodedata.category(c) == 'Cc')
+        #lower Camel case regular expression
+        self.cammel_case = u"[a-z]+((\d)|([A-Z0-9][a-z0-9]+))*([A-Z])?"
+        # Create regex of above characters
+        self.control_char_re = re.compile('[%s]' % re.escape(control_chars))
 
     def __enter__(self):
         return self
@@ -23,6 +31,15 @@ class Spider:
     def __exit__(self, exc_type, exc_value, traceback):
         self.session.commit()
         self.session.close()
+
+    def remove_control_chars(self, s):
+        return self.control_char_re.sub('', s)
+
+    def remove_cammelcase(self, text):
+        return re.sub(self.cammel_case, " ", text)
+
+    def remove_special_symbols(self, text):
+        return re.sub(ur"[^a-zA-Zа-яА-Я0-9]+", ' ', text)
 
     def get_links(self, base_link, htmlElement):
         links = set()
@@ -34,12 +51,17 @@ class Spider:
             links.add(Link(link))
         return links
 
-    def get_words_set(self, text):
+    def get_words_set(self, doc):
         occurence = set()
-        text_string = text.lower()
-        match_pattern = re.findall(r'\b[a-zа-я]{3,15}\b', text_string)
-        for word in match_pattern:
-            occurence.add(Word(word))
+        words_lists = doc.xpath('.//text()')
+
+        for words in words_lists:
+            filtered_string = self.remove_control_chars(words)
+            filtered_string = self.remove_cammelcase(filtered_string)
+            final_string = self.remove_special_symbols(filtered_string)
+            if len(final_string) > 0:
+                for word in final_string.split(" "):
+                    occurence.add(Word(word))
         return occurence
 
     def parse_page(self, base_link):
@@ -48,8 +70,8 @@ class Spider:
         links = set()
         if len(sourceCode) > 0 :
             htmlElement = html.document_fromstring(sourceCode)
-            text = htmlElement.text_content()
-            base_link.words = list(self.get_words_set(text))
+            doc = html.fromstring(sourceCode)
+            base_link.words = list(self.get_words_set(doc))
             base_link.date = datetime.datetime.now()
             #TODO: write to database
             #session = Session()
@@ -83,8 +105,8 @@ class Spider:
             self.session.merge(link)
         self.session.commit()
         print 'Found %s new links at %s' % (len(page_new_links), base_link)
-        for new_link in page_new_links:
-            self.walk_links(new_link, is_valid_link)
+        #for new_link in page_new_links:
+            #self.walk_links(new_link, is_valid_link)
 
 
 if __name__ == '__main__':
