@@ -15,7 +15,7 @@ class Link(Base):
 
     link = Column(String(255), primary_key=True)
     date = Column(DateTime)
-    words = relationship("Word", secondary=link_words_assosiation)
+    words = relationship("Word", secondary=link_words_assosiation, cascade_backrefs=False)
 
     def __repr__(self):
         return "Link(%s)" % (self.link)

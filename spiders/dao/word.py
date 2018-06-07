@@ -8,7 +8,7 @@ class Word(Base):
     __tablename__='words'
 
     word = Column(String(255), primary_key=True)
-    links = relationship("Link", secondary=link_words_assosiation)
+    links = relationship("Link", secondary=link_words_assosiation,cascade_backrefs=False)
 
     def __repr__(self):
         return "Word(%s)" % (self.word)
